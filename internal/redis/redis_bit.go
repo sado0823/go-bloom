@@ -27,24 +27,24 @@ return true
 
 var ErrTooLargeOffset = errors.New("too large offset")
 
-type RedisProvider struct {
+type Provider struct {
 	store *redis.Client
 	key   string
 	bits  uint
 }
 
-func NewRedisProvider(addr string, key string, bits uint) *RedisProvider {
-	return &RedisProvider{store: newRedis(addr), key: key, bits: bits}
+func NewRedisProvider(addr string, key string, bits uint) *Provider {
+	return &Provider{store: newRedis(addr), key: key, bits: bits}
 }
 
 // Add implement Provider interface
-func (r *RedisProvider) Add(data []byte) error {
+func (r *Provider) Add(data []byte) error {
 	location := r.getBitLocation(data)
 	return r.set(location)
 }
 
 // Exists implement Provider interface
-func (r *RedisProvider) Exists(data []byte) (bool, error) {
+func (r *Provider) Exists(data []byte) (bool, error) {
 	location := r.getBitLocation(data)
 	return r.check(location)
 }
@@ -56,7 +56,7 @@ func newRedis(addr string) *redis.Client {
 }
 
 // getBitLocation return data hash to bit location
-func (r *RedisProvider) getBitLocation(data []byte) []uint {
+func (r *Provider) getBitLocation(data []byte) []uint {
 	l := make([]uint, maps)
 	for i := 0; i < maps; i++ {
 		hashV := r.hash(append(data, byte(i)))
@@ -66,7 +66,7 @@ func (r *RedisProvider) getBitLocation(data []byte) []uint {
 }
 
 // set those offsets into bloom filter
-func (r *RedisProvider) set(offsets []uint) error {
+func (r *Provider) set(offsets []uint) error {
 	args, err := r.buildOffsetArgs(offsets)
 	if err != nil {
 		return err
@@ -81,7 +81,7 @@ func (r *RedisProvider) set(offsets []uint) error {
 }
 
 // check if those offsets are in bloom filter
-func (r *RedisProvider) check(offsets []uint) (bool, error) {
+func (r *Provider) check(offsets []uint) (bool, error) {
 	args, err := r.buildOffsetArgs(offsets)
 	if err != nil {
 		return false, err
@@ -104,7 +104,7 @@ func (r *RedisProvider) check(offsets []uint) (bool, error) {
 
 // buildOffsetArgs set []uint offset to []string that can use in redis
 // and check if offset is larger than r.bits
-func (r *RedisProvider) buildOffsetArgs(offsets []uint) ([]string, error) {
+func (r *Provider) buildOffsetArgs(offsets []uint) ([]string, error) {
 	var args []string
 
 	for _, offset := range offsets {
@@ -120,6 +120,6 @@ func (r *RedisProvider) buildOffsetArgs(offsets []uint) ([]string, error) {
 }
 
 // hash returns the hash value of data.
-func (r *RedisProvider) hash(data []byte) uint64 {
+func (r *Provider) hash(data []byte) uint64 {
 	return murmur3.Sum64(data)
 }

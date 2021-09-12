@@ -13,7 +13,7 @@ type (
 		hit   int64
 		miss  int64
 
-		provider Provider
+		Provider
 	}
 
 	Provider interface {
@@ -29,10 +29,10 @@ type (
 func NewRedis(addr string, key string, bits uint) *Filter {
 	provider := redis.NewRedisProvider(addr, key, bits)
 	return &Filter{
-		provider: provider,
+		Provider: provider,
 	}
 }
 
 func NewWithProvider(provider Provider) *Filter {
-	return &Filter{provider: provider}
+	return &Filter{Provider: provider}
 }
